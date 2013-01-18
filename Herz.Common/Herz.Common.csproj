@@ -43,6 +43,7 @@
     <Compile Include="ECGSample.cs" />
     <Compile Include="IDataReader.cs" />
     <Compile Include="IFilter.cs" />
+    <Compile Include="MaxBy.cs" />
     <Compile Include="Pipeline.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -43,8 +43,7 @@ namespace Herz.Algorithm
                 CultureInfo culture = CultureInfo.InvariantCulture;
                 // Read csv data one by one until EOF.
                 while (csv.ReadNextRecord())
-                {
-                    
+                {                    
                     double val = 0;
                     string data = csv[index, 0];
                     // Parse data as ECGSample, if it fails given data is skipped.
@@ -56,7 +55,7 @@ namespace Herz.Algorithm
                     {
                         OnBufferFullEvent(new DataReadyEventArgs(_buffer));
                         _buffer.Clear();
-                        System.Threading.Thread.Sleep(125);
+                        System.Threading.Thread.Sleep(10);
                     }
                     index++;
                 }

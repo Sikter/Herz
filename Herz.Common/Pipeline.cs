@@ -17,7 +17,25 @@ namespace Herz.Common
         /// </summary>
         private readonly List<IFilter<T>> filters = new List<IFilter<T>>();
 
+        /// <summary>
+        /// Amount of delay that filters produce during processing.
+        /// </summary>
+        public int FilterDelay { get; set; }
+
+        /// <summary>
+        /// Sampling frequency of incoming ECG signal.
+        /// </summary>
+        public int samplingFrequency { get; set; }
+
+        /// <summary>
+        /// Current ecg sample chunk. 
+        /// </summary>
         public IEnumerable<T> Current { get; set; }
+
+        public Pipeline(int frequency) 
+        {
+            samplingFrequency = frequency;
+        }
 
         /// <summary>
         /// Registers given filter in pipeline. Filters will be executed in order they 
@@ -28,6 +46,7 @@ namespace Herz.Common
         public Pipeline<T> Register(IFilter<T> filter)
         {
             filters.Add(filter);
+            FilterDelay += filter.GetDelay();
             return this;
         }
 
@@ -37,14 +56,9 @@ namespace Herz.Common
         /// <param name="ecgChunk"></param>
         public IEnumerable<T> Execute(IEnumerable<T> ecgChunk)
         {
-            //IEnumerable<T> current = ecgChunk;//.ToList<T>();
             Current = ecgChunk;
             foreach (IFilter<T> filter in filters)
-            {
                 Current = filter.Execute(Current);
-            }
-            //IEnumerator<T> enumerator = Current.GetEnumerator();
-            //while (enumerator.MoveNext()) ;
 
             return Current;
         }

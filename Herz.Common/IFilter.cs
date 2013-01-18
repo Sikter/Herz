@@ -8,5 +8,7 @@ namespace Herz.Common
     public interface IFilter<T>
     {
         IEnumerable<T> Execute(IEnumerable<T> input);
+
+        int GetDelay();
     }
 }

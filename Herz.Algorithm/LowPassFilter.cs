@@ -110,5 +110,11 @@ namespace Herz.Algorithm
             cf.Add(3.359626918191212e-006);
             
         }
+
+
+        public int GetDelay()
+        {
+            return (elements.Capacity - 1) / 2;
+        }
     }
 }

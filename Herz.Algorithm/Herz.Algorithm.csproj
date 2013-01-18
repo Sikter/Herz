@@ -43,7 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Delay.cs" />
     <Compile Include="DerivativeFilter.cs" />
+    <Compile Include="Detector.cs" />
     <Compile Include="FileReader.cs" />
     <Compile Include="LowPassFilter.cs" />
     <Compile Include="MWI.cs" />

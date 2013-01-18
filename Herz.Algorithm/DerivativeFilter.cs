@@ -27,9 +27,8 @@ namespace Herz.Algorithm
         public IEnumerable<ECGSample> Execute(IEnumerable<ECGSample> input)
         {
             foreach (ECGSample sample in input) 
-            {
                 Derivate(sample);
-            }
+
             return input;
         }
 
@@ -47,6 +46,12 @@ namespace Herz.Algorithm
             }
 
             sample.Value = result;
+        }
+
+
+        public int GetDelay()
+        {
+            return (elements.Capacity - 1) / 2;
         }
     }
 }

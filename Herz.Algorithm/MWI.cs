@@ -8,11 +8,11 @@ namespace Herz.Algorithm
 {
     public class MWI : IFilter<ECGSample>
     {
-        List<double> elements = new List<double>(5);
+        List<double> elements = new List<double>(60);
 
         public MWI() 
         {
-            for (int i = 0; i < 80; i++)
+            for (int i = 0; i < 60; i++)
                 elements.Add(0);
         }
 
@@ -33,10 +33,15 @@ namespace Herz.Algorithm
                 elements.RemoveAt(0);
             elements.Add(sample.Value);
 
-            for (int i = 0; i < 80; i++)
+            for (int i = 0; i < 60; i++)
                 result += elements[i];
 
             sample.Value = result;
+        }
+
+        public int GetDelay()
+        {
+            return elements.Capacity / 2;
         }
     }
 }

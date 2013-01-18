@@ -6,14 +6,20 @@ using Herz.Common;
 
 namespace Herz.Algorithm
 {
-    public class SquareFilter : IFilter<ECGSample>
+    public class Delay : IFilter<ECGSample>
     {
+        private int sampleDelay;
+
+        public Delay(int delay) 
+        {
+            sampleDelay = delay;
+        }
+
         public IEnumerable<ECGSample> Execute(IEnumerable<ECGSample> input)
         {
-            foreach (ECGSample s in input) 
-            {
-                s.Value = s.Value * s.Value;
-            }
+            foreach (ECGSample sample in input)
+                sample.Index -= sampleDelay;
+
             return input;
         }
 
