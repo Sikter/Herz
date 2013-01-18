@@ -28,6 +28,8 @@ namespace Herz.Algorithm
         public List<ECGSample> RR { get; set; }
         public List<ECGSample> RR2 { get; set; }
 
+        List<ECGSample> newlyDetected = new List<ECGSample>();
+
         public Detector(int frequency) 
         {
             RR = new List<ECGSample>();
@@ -40,7 +42,7 @@ namespace Herz.Algorithm
             samples.Add(new ECGSample(5493, 0.06246584950895441));
             samples.Add(new ECGSample(6482, 0.066965563339300357));
             samples.Add(new ECGSample(7459, 0.068204732722367045));
-
+            
 
             sampleFrequency = frequency;
             UpdateTresholds2();
@@ -49,50 +51,59 @@ namespace Herz.Algorithm
 
         public IEnumerable<ECGSample> Execute(IEnumerable<ECGSample> input)
         {
-            List<ECGSample> newlyDetected = new List<ECGSample>();
+            newlyDetected.Clear();
+            ECGSample peakCandidate;
 
-            ECGSample peak = input.MaxBy( x => x.Value);
-            PEAK = peak.Value;
-
-            foreach (ECGSample s in input) 
+            try
             {
-                samples.Add(new ECGSample(s.Index, s.Value));
-                if (s.Value > TRESHOLD1 && s.Index - lastQRS >= RR_LOW_LIMIT) 
-                {
-                    SPKI = 0.125 * s.Value + 0.875 * SPKI;
-                    RR.Add(new ECGSample(s.Index, s.Index - lastQRS));
-                    newlyDetected.Add(new ECGSample(s.Index, s.Index - lastQRS));
+                peakCandidate = input.Where(x => x.Index - lastQRS >= RR_LOW_LIMIT && 
+                                            x.Index - lastQRS < RR_HIGH_LIMIT)
+                                     .MaxBy(y => y.Value);
 
-                    lastQRS = s.Index;
+                if (peakCandidate.Value > TRESHOLD1)
+                {
+                    SPKI = 0.125 * peakCandidate.Value + 0.875 * SPKI;
+                    RR.Add(new ECGSample(peakCandidate.Index, peakCandidate.Index - lastQRS));
+                    newlyDetected.Add(new ECGSample(peakCandidate.Index, peakCandidate.Index - lastQRS));
+
+                    lastQRS = peakCandidate.Index;
                     UpdateTresholds();
                     samples.Clear();
-                    
                 }
-                else if (s.Value < TRESHOLD1 && s.Index - lastQRS < RR_HIGH_LIMIT)
-                    NPKI = 0.125 * s.Value + 0.875 * NPKI;
-
-                else if (s.Index - lastQRS > RR_HIGH_LIMIT) 
-                {
-                    foreach (ECGSample s2 in samples.ToList()) 
-                    {
-                        if (s2.Value > TRESHOLD2) 
-                        {
-                            SPKI = 0.25 * s2.Value + 0.75 * SPKI;
-                            RR.Add(new ECGSample(s2.Index, s2.Index - lastQRS));
-                            RR2.Add(new ECGSample(s2.Index, s2.Index - lastQRS));
-                            newlyDetected.Add(new ECGSample(s2.Index, s2.Index - lastQRS));
-                            lastQRS = s2.Index;
-                            UpdateTresholds();
-                            samples.Clear();
-                            break;
-                        }
-                    }
-                }
-                TRESHOLD1 = NPKI + 0.25 * (SPKI - NPKI);
-                TRESHOLD2 = 0.5 * TRESHOLD1;
+                else
+                    NPKI = 0.125 * peakCandidate.Value + 0.875 * NPKI;
             }
-            
+            catch 
+            {
+                // No peaks found in input
+                foreach (ECGSample s in input)
+                {
+                    samples.Add(new ECGSample(s.Index, s.Value));
+                    if (s.Index - lastQRS > RR_HIGH_LIMIT)
+                        DoSearchback();
+                }
+            }
+
+            TRESHOLD1 = NPKI + 0.25 * (SPKI - NPKI);
+            TRESHOLD2 = 0.5 * TRESHOLD1;
+
             return newlyDetected;
+        }
+
+        private void DoSearchback()
+        {
+            ECGSample peakCandidate = samples.MaxBy(x => x.Value);
+
+            if (peakCandidate.Value > TRESHOLD2)
+            {
+                SPKI = 0.25 * peakCandidate.Value + 0.75 * SPKI;
+                RR.Add(new ECGSample(peakCandidate.Index, peakCandidate.Index - lastQRS));
+                RR2.Add(new ECGSample(peakCandidate.Index, peakCandidate.Index - lastQRS));
+                newlyDetected.Add(new ECGSample(peakCandidate.Index, peakCandidate.Index - lastQRS));
+                lastQRS = peakCandidate.Index;
+                UpdateTresholds();
+                samples.Clear();
+            }
         }
 
         private void UpdateTresholds()

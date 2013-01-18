@@ -58,7 +58,7 @@ namespace Herz.GUI
 
             TaskScheduler uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
             Task.Factory.StartNew(() => reader.Read());
-            //Task.Factory.StartNew(() => PlotRaw(uiScheduler));
+            Task.Factory.StartNew(() => PlotRaw(uiScheduler));
             Task.Factory.StartNew(() => PlotProcessed(uiScheduler));
             Task.Factory.StartNew(() => PlotDetectedQRS(uiScheduler));
         }
