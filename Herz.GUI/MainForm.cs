@@ -41,7 +41,7 @@ namespace Herz.GUI
             InitializeGraphs(rawDataGraph, SeriesChartType.FastLine, -0.5, 0.8);
             InitializeGraphs(hrSignalGraph,SeriesChartType.FastLine, -0.03, 0.1);
 
-            reader = new CSVReader("D:\\Fax\\Diplomski\\3.Semestar\\ISS\\ecg.csv", 100, 1250);
+            reader = new CSVReader("D:\\Fax\\Diplomski\\3.Semestar\\ISS\\ecg.csv", 250, 1250);
             reader.DataReady += new EventHandler<Herz.Common.DataReadyEventArgs>(reader_DataReady);
 
             PanTompkins = new Pipeline<ECGSample>(reader.Frequency);
@@ -49,7 +49,7 @@ namespace Herz.GUI
             PanTompkins.Register(derivative);
             PanTompkins.Register(square);
             PanTompkins.Register(integrator);
-            //PanTompkins.Register(new Delay(PanTompkins.FilterDelay));
+            PanTompkins.Register(new Delay(PanTompkins.FilterDelay));
             detector = new Detector(PanTompkins.samplingFrequency);
             
 
@@ -181,12 +181,14 @@ namespace Herz.GUI
 
         private void rawDataGraph_MouseMove(object sender, MouseEventArgs e)
         {
-            WriteLabels(e.Location, rawDataGraph);
+            if(e.Button == System.Windows.Forms.MouseButtons.None)
+                WriteLabels(e.Location, rawDataGraph);
         }
 
         private void hrSignalGraph_MouseMove(object sender, MouseEventArgs e)
         {
-            WriteLabels(e.Location, hrSignalGraph);
+            if (e.Button == System.Windows.Forms.MouseButtons.None)
+                WriteLabels(e.Location, hrSignalGraph);
         }
 
         private void WriteLabels(Point pos, Chart chart) 
@@ -198,7 +200,5 @@ namespace Herz.GUI
             toolStripLblX.Text = ((int)pointXPixel).ToString();
             toolStripLblY.Text = (Math.Floor((pointYPixel * 100000) + 0.5) / 100000).ToString();
         }
-
-        
     }
 }

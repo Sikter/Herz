@@ -55,7 +55,7 @@ namespace Herz.Algorithm
                     {
                         OnBufferFullEvent(new DataReadyEventArgs(_buffer));
                         _buffer.Clear();
-                        System.Threading.Thread.Sleep(10);
+                        System.Threading.Thread.Sleep(100);
                     }
                     index++;
                 }
