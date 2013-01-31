@@ -10,6 +10,7 @@ namespace Herz.Algorithm
     {
         private List<ECGSample> samples = new List<ECGSample>();
         private int sampleFrequency;
+        private int chunkSize;
 
         private double PEAK = 0;
         private double SPKI = 0;
@@ -23,41 +24,92 @@ namespace Herz.Algorithm
         private double TRESHOLD2 = 0;
         private int lastQRS = 0;
 
-        //private bool initializationComplete = false;
+        private bool initComplete = false;
+        private List<ECGSample> initSamples = new List<ECGSample>();
+        public List<ECGSample> initRR = new List<ECGSample>();
 
         public List<ECGSample> RR { get; set; }
-        public List<ECGSample> RR2 { get; set; }
-
         List<ECGSample> newlyDetected = new List<ECGSample>();
 
-        public Detector(int frequency) 
+        public Detector(int frequency, int chunkSize)
         {
             RR = new List<ECGSample>();
-            RR2 = new List<ECGSample>();
-            samples.Add(new ECGSample(625, 0.0674857247903559));
-            samples.Add(new ECGSample(1525, 0.068899481733875584));
-            samples.Add(new ECGSample(2497, 0.069719186260481819));
-            samples.Add(new ECGSample(3531, 0.0758428563792688));
-            samples.Add(new ECGSample(4520, 0.066008737954933228));
-            samples.Add(new ECGSample(5493, 0.06246584950895441));
-            samples.Add(new ECGSample(6482, 0.066965563339300357));
-            samples.Add(new ECGSample(7459, 0.068204732722367045));
-            
-
-            sampleFrequency = frequency;
-            UpdateTresholds2();
+            this.sampleFrequency = frequency;
+            this.chunkSize = chunkSize;
 
         }
 
         public IEnumerable<ECGSample> Execute(IEnumerable<ECGSample> input)
         {
             newlyDetected.Clear();
-            ECGSample peakCandidate;
 
+            // Initialization period is first 8 seconds of incoming signal.
+            // Samples are aggregated and for every 1 second period the highest peak is assumed to be R peak.
+            // Initial tresholds are set after all 8 seconds are acquired.
+            if (!initComplete)
+            {
+                DetectInitializationPeaks(input);
+                // Tresholds are set, begin detecton from start
+                if (initComplete)
+                {
+                    double d = (sampleFrequency * 8) / chunkSize;
+                    int chunks = (int)Math.Ceiling(d);
+                    for (int i = 0; i < chunks; i++)
+                    {
+                        List<ECGSample> data = initSamples.Where(x => x.Index >= i * chunkSize &&
+                                                                 x.Index < (i + 1) * chunkSize).ToList();
+                        PanTompkinsDetection(data);
+                    }
+                    return newlyDetected;
+                }
+            }
+            else
+            {
+                PanTompkinsDetection(input);
+            }
+
+            return newlyDetected;
+        }
+
+        /// <summary>
+        /// Detects peaks from first 8 seconds of signal which are used to initialy set treshold values.
+        /// </summary>
+        /// <param name="input"></param>
+        private void DetectInitializationPeaks(IEnumerable<ECGSample> input)
+        {
+            if (initSamples.Count <= sampleFrequency * 7)
+            {
+                foreach (ECGSample s in input)
+                {
+                    initSamples.Add(new ECGSample(s.Index, s.Value));
+                }
+                return;
+            }
+
+            ECGSample peak;
+            for (int i = 0; i < 7; i++)
+            {
+                peak = initSamples.Where(x => x.Index >= i * sampleFrequency &&
+                                              x.Index < (i + 1) * sampleFrequency)
+                                  .MaxBy(y => y.Value);
+                initRR.Add(new ECGSample(peak.Index, peak.Value));
+            }
+            // Update initial treshold value.
+            InitUpdateTresholds();
+        }
+
+        /// <summary>
+        /// Pan-Tompkins detection algorithm. Used after intialization phase.
+        /// 
+        /// </summary>
+        /// <param name="input">Chunk of proccesed ECG data.</param>
+        private void PanTompkinsDetection(IEnumerable<ECGSample> input)
+        {
+            ECGSample peakCandidate;
             try
             {
-                peakCandidate = input.Where(x => x.Index - lastQRS >= RR_LOW_LIMIT && 
-                                            x.Index - lastQRS < RR_HIGH_LIMIT)
+                peakCandidate = input.Where(x => x.Index - lastQRS >= RR_LOW_LIMIT &&
+                                                 x.Index - lastQRS < RR_HIGH_LIMIT)
                                      .MaxBy(y => y.Value);
 
                 if (peakCandidate.Value > TRESHOLD1)
@@ -71,70 +123,80 @@ namespace Herz.Algorithm
                     samples.Clear();
                 }
                 else
+                {
+                    foreach (ECGSample s in input)
+                        samples.Add(new ECGSample(s.Index, s.Value));
+
                     NPKI = 0.125 * peakCandidate.Value + 0.875 * NPKI;
+                }
             }
-            catch 
+            catch
             {
                 // No peaks found in input
                 foreach (ECGSample s in input)
                 {
                     samples.Add(new ECGSample(s.Index, s.Value));
                     if (s.Index - lastQRS > RR_HIGH_LIMIT)
-                        DoSearchback();
+                    {
+                        if (DoSearchback())
+                            break;
+                    }
                 }
             }
 
             TRESHOLD1 = NPKI + 0.25 * (SPKI - NPKI);
             TRESHOLD2 = 0.5 * TRESHOLD1;
-
-            return newlyDetected;
         }
 
-        private void DoSearchback()
+        private bool DoSearchback()
         {
             ECGSample peakCandidate = samples.MaxBy(x => x.Value);
-
-            if (peakCandidate.Value > TRESHOLD2)
+            if (peakCandidate != null && peakCandidate.Value > TRESHOLD2)
             {
                 SPKI = 0.25 * peakCandidate.Value + 0.75 * SPKI;
                 RR.Add(new ECGSample(peakCandidate.Index, peakCandidate.Index - lastQRS));
-                RR2.Add(new ECGSample(peakCandidate.Index, peakCandidate.Index - lastQRS));
                 newlyDetected.Add(new ECGSample(peakCandidate.Index, peakCandidate.Index - lastQRS));
                 lastQRS = peakCandidate.Index;
                 UpdateTresholds();
                 samples.Clear();
+                return true;
             }
+
+            return false;
         }
 
+        /// <summary>
+        /// Updates tresholds based on last 8 RR intervals.
+        /// This method is normally used after initialization stage of algorithm.
+        /// </summary>
         private void UpdateTresholds()
         {
-            double r = 0;
-            double r2 = 0;
-
             if (RR.Count >= 8)
             {
-                for (int i = 8; i > 0; i--)
-                    r += RR[RR.Count - i].Value;
-                RRAVERAGE1 = 0.125 * r;
-            }
+                double r = 0;
+                List<ECGSample> lastR1 = RR.TakeLast(8).ToList();
 
-            if( RR2.Count >= 8)
-            {
-                for (int i = 8; i > 0; i--)
-                    r2 += RR2[RR2.Count - i].Value;
-                RRAVERAGE2 = 0.125 * r2;
-            }
+                foreach (ECGSample lr in lastR1)
+                    r += lr.Value;
+                RRAVERAGE1 = r / lastR1.Count();
 
-            RR_LOW_LIMIT = 0.92 * RRAVERAGE2;
-            RR_HIGH_LIMIT = 1.16 * RRAVERAGE2;
-            RR_MISSED_LIMIT = 1.66 * RRAVERAGE2;
+                RRAVERAGE2 = RRAVERAGE1;
+
+                RR_LOW_LIMIT = 0.92 * RRAVERAGE2;
+                RR_HIGH_LIMIT = 1.16 * RRAVERAGE2;
+                RR_MISSED_LIMIT = 1.66 * RRAVERAGE2;
+            }
         }
 
-        private void UpdateTresholds2()
+        /// <summary>
+        /// Method for tresholds update for initialization phase.
+        /// (first 8 seconds of incoming signal).
+        /// </summary>
+        private void InitUpdateTresholds()
         {
             lastQRS = 0;
-            
-            foreach (ECGSample s in samples) 
+
+            foreach (ECGSample s in initRR)
             {
                 SPKI = 0.125 * s.Value + 0.875 * SPKI;
                 TRESHOLD1 = NPKI + 0.25 * (SPKI - NPKI);
@@ -144,7 +206,7 @@ namespace Herz.Algorithm
                 lastQRS = s.Index;
             }
 
-            foreach (ECGSample s in RR) 
+            foreach (ECGSample s in RR)
             {
                 RRAVERAGE1 += s.Value;
             }
@@ -156,9 +218,10 @@ namespace Herz.Algorithm
             RR_LOW_LIMIT = RRAVERAGE2 * 0.92;
             RR_MISSED_LIMIT = RRAVERAGE2 * 1.66;
 
-            samples.Clear();
+            //sample.Clear();
             RR.Clear();
             lastQRS = 0;
+            initComplete = true;
         }
 
         public int GetDelay()
@@ -166,6 +229,5 @@ namespace Herz.Algorithm
             return 0;
         }
     }
-
 
 }

@@ -55,7 +55,7 @@ namespace Herz.Algorithm
                     {
                         OnBufferFullEvent(new DataReadyEventArgs(_buffer));
                         _buffer.Clear();
-                        System.Threading.Thread.Sleep(100);
+                        System.Threading.Thread.Sleep(200);
                     }
                     index++;
                 }
@@ -69,10 +69,8 @@ namespace Herz.Algorithm
         protected virtual void OnBufferFullEvent(DataReadyEventArgs e)
         {
             EventHandler<DataReadyEventArgs> handler = DataReady;
-
             // handler will be null if there are no subscribers to event
             if (handler != null) 
-                //e.ECGSignalChunk = _buffer;
                 handler(this, e); // raise event
 
         }

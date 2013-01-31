@@ -32,20 +32,39 @@ namespace Herz.GUI
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
-            this.startToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.choseDataSourceToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.otherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.eCGFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.segmentStartToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.segmentEndToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.grBoxRawData = new System.Windows.Forms.GroupBox();
             this.rawDataGraph = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.grBoxHRSignal = new System.Windows.Forms.GroupBox();
             this.hrSignalGraph = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.grBoxControls = new System.Windows.Forms.GroupBox();
+            this.txtBoxMeanAbsFD2 = new System.Windows.Forms.TextBox();
+            this.txtBoxMeanAbsFD = new System.Windows.Forms.TextBox();
+            this.txtBoxDiffMM = new System.Windows.Forms.TextBox();
+            this.txtBoxMaxX = new System.Windows.Forms.TextBox();
+            this.txtBoxMinX = new System.Windows.Forms.TextBox();
+            this.txtBoxMeanFDX = new System.Windows.Forms.TextBox();
+            this.txtBoxStdX = new System.Windows.Forms.TextBox();
+            this.txtBoxMeanX = new System.Windows.Forms.TextBox();
+            this.lblMeanAbsFD2 = new System.Windows.Forms.Label();
+            this.lblMeanAbsFD = new System.Windows.Forms.Label();
+            this.lblDifMM = new System.Windows.Forms.Label();
+            this.lblMaxX = new System.Windows.Forms.Label();
+            this.lblMINX = new System.Windows.Forms.Label();
+            this.lblMeanFDX = new System.Windows.Forms.Label();
+            this.lblStdX = new System.Windows.Forms.Label();
+            this.lblMeanX = new System.Windows.Forms.Label();
+            this.cBoxSegments = new System.Windows.Forms.ComboBox();
+            this.lblSegments = new System.Windows.Forms.Label();
             this.chkBoxFollowIncomingData = new System.Windows.Forms.CheckBox();
             this.btnStop = new System.Windows.Forms.Button();
             this.btnStart = new System.Windows.Forms.Button();
@@ -54,6 +73,7 @@ namespace Herz.GUI
             this.toolStripLblX = new System.Windows.Forms.ToolStripStatusLabel();
             this.labelY = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripLblY = new System.Windows.Forms.ToolStripStatusLabel();
+            this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.menuStrip.SuspendLayout();
             this.grBoxRawData.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.rawDataGraph)).BeginInit();
@@ -66,41 +86,43 @@ namespace Herz.GUI
             // menuStrip
             // 
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.startToolStripMenuItem});
+            this.openFilesToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.Size = new System.Drawing.Size(885, 24);
             this.menuStrip.TabIndex = 0;
             this.menuStrip.Text = "menuStrip";
             // 
-            // startToolStripMenuItem
+            // openFilesToolStripMenuItem
             // 
-            this.startToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.choseDataSourceToolStripMenuItem});
-            this.startToolStripMenuItem.Name = "startToolStripMenuItem";
-            this.startToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
-            this.startToolStripMenuItem.Text = "Options";
+            this.openFilesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.eCGFileToolStripMenuItem,
+            this.segmentStartToolStripMenuItem,
+            this.segmentEndToolStripMenuItem});
+            this.openFilesToolStripMenuItem.Name = "openFilesToolStripMenuItem";
+            this.openFilesToolStripMenuItem.Size = new System.Drawing.Size(72, 20);
+            this.openFilesToolStripMenuItem.Text = "Open files";
             // 
-            // choseDataSourceToolStripMenuItem
+            // eCGFileToolStripMenuItem
             // 
-            this.choseDataSourceToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem,
-            this.otherToolStripMenuItem});
-            this.choseDataSourceToolStripMenuItem.Name = "choseDataSourceToolStripMenuItem";
-            this.choseDataSourceToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
-            this.choseDataSourceToolStripMenuItem.Text = "Chose data source";
+            this.eCGFileToolStripMenuItem.Name = "eCGFileToolStripMenuItem";
+            this.eCGFileToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.eCGFileToolStripMenuItem.Text = "ECG file";
+            this.eCGFileToolStripMenuItem.Click += new System.EventHandler(this.eCGFileToolStripMenuItem_Click);
             // 
-            // fileToolStripMenuItem
+            // segmentStartToolStripMenuItem
             // 
-            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(104, 22);
-            this.fileToolStripMenuItem.Text = "File";
+            this.segmentStartToolStripMenuItem.Name = "segmentStartToolStripMenuItem";
+            this.segmentStartToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.segmentStartToolStripMenuItem.Text = "Segment Start";
+            this.segmentStartToolStripMenuItem.Click += new System.EventHandler(this.segmentStartToolStripMenuItem_Click);
             // 
-            // otherToolStripMenuItem
+            // segmentEndToolStripMenuItem
             // 
-            this.otherToolStripMenuItem.Name = "otherToolStripMenuItem";
-            this.otherToolStripMenuItem.Size = new System.Drawing.Size(104, 22);
-            this.otherToolStripMenuItem.Text = "Other";
+            this.segmentEndToolStripMenuItem.Name = "segmentEndToolStripMenuItem";
+            this.segmentEndToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.segmentEndToolStripMenuItem.Text = "Segment End";
+            this.segmentEndToolStripMenuItem.Click += new System.EventHandler(this.segmentEndToolStripMenuItem_Click);
             // 
             // grBoxRawData
             // 
@@ -131,7 +153,11 @@ namespace Herz.GUI
             series1.ChartArea = "ChartArea1";
             series1.Legend = "Legend1";
             series1.Name = "ECG data";
+            series2.ChartArea = "ChartArea1";
+            series2.Legend = "Legend1";
+            series2.Name = "Series2";
             this.rawDataGraph.Series.Add(series1);
+            this.rawDataGraph.Series.Add(series2);
             this.rawDataGraph.Size = new System.Drawing.Size(571, 194);
             this.rawDataGraph.TabIndex = 0;
             this.rawDataGraph.Text = "Raw data graph";
@@ -162,16 +188,16 @@ namespace Herz.GUI
             this.hrSignalGraph.Margin = new System.Windows.Forms.Padding(10);
             this.hrSignalGraph.Name = "hrSignalGraph";
             this.hrSignalGraph.Padding = new System.Windows.Forms.Padding(10);
-            series2.ChartArea = "ChartArea1";
-            series2.Legend = "Legend1";
-            series2.Name = "Series1";
             series3.ChartArea = "ChartArea1";
-            series3.IsVisibleInLegend = false;
             series3.Legend = "Legend1";
-            series3.Name = "Series2";
-            series3.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Int32;
-            this.hrSignalGraph.Series.Add(series2);
+            series3.Name = "Series1";
+            series4.ChartArea = "ChartArea1";
+            series4.IsVisibleInLegend = false;
+            series4.Legend = "Legend1";
+            series4.Name = "Series2";
+            series4.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Int32;
             this.hrSignalGraph.Series.Add(series3);
+            this.hrSignalGraph.Series.Add(series4);
             this.hrSignalGraph.Size = new System.Drawing.Size(571, 180);
             this.hrSignalGraph.TabIndex = 0;
             this.hrSignalGraph.Text = "HR signal";
@@ -179,7 +205,26 @@ namespace Herz.GUI
             // 
             // grBoxControls
             // 
-            this.grBoxControls.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.grBoxControls.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.grBoxControls.Controls.Add(this.txtBoxMeanAbsFD2);
+            this.grBoxControls.Controls.Add(this.txtBoxMeanAbsFD);
+            this.grBoxControls.Controls.Add(this.txtBoxDiffMM);
+            this.grBoxControls.Controls.Add(this.txtBoxMaxX);
+            this.grBoxControls.Controls.Add(this.txtBoxMinX);
+            this.grBoxControls.Controls.Add(this.txtBoxMeanFDX);
+            this.grBoxControls.Controls.Add(this.txtBoxStdX);
+            this.grBoxControls.Controls.Add(this.txtBoxMeanX);
+            this.grBoxControls.Controls.Add(this.lblMeanAbsFD2);
+            this.grBoxControls.Controls.Add(this.lblMeanAbsFD);
+            this.grBoxControls.Controls.Add(this.lblDifMM);
+            this.grBoxControls.Controls.Add(this.lblMaxX);
+            this.grBoxControls.Controls.Add(this.lblMINX);
+            this.grBoxControls.Controls.Add(this.lblMeanFDX);
+            this.grBoxControls.Controls.Add(this.lblStdX);
+            this.grBoxControls.Controls.Add(this.lblMeanX);
+            this.grBoxControls.Controls.Add(this.cBoxSegments);
+            this.grBoxControls.Controls.Add(this.lblSegments);
             this.grBoxControls.Controls.Add(this.chkBoxFollowIncomingData);
             this.grBoxControls.Controls.Add(this.btnStop);
             this.grBoxControls.Controls.Add(this.btnStart);
@@ -189,6 +234,160 @@ namespace Herz.GUI
             this.grBoxControls.TabIndex = 2;
             this.grBoxControls.TabStop = false;
             this.grBoxControls.Text = "Controls";
+            // 
+            // txtBoxMeanAbsFD2
+            // 
+            this.txtBoxMeanAbsFD2.Location = new System.Drawing.Point(88, 271);
+            this.txtBoxMeanAbsFD2.Name = "txtBoxMeanAbsFD2";
+            this.txtBoxMeanAbsFD2.ReadOnly = true;
+            this.txtBoxMeanAbsFD2.Size = new System.Drawing.Size(103, 20);
+            this.txtBoxMeanAbsFD2.TabIndex = 18;
+            // 
+            // txtBoxMeanAbsFD
+            // 
+            this.txtBoxMeanAbsFD.Location = new System.Drawing.Point(88, 245);
+            this.txtBoxMeanAbsFD.Name = "txtBoxMeanAbsFD";
+            this.txtBoxMeanAbsFD.ReadOnly = true;
+            this.txtBoxMeanAbsFD.Size = new System.Drawing.Size(103, 20);
+            this.txtBoxMeanAbsFD.TabIndex = 17;
+            // 
+            // txtBoxDiffMM
+            // 
+            this.txtBoxDiffMM.Location = new System.Drawing.Point(88, 219);
+            this.txtBoxDiffMM.Name = "txtBoxDiffMM";
+            this.txtBoxDiffMM.ReadOnly = true;
+            this.txtBoxDiffMM.Size = new System.Drawing.Size(103, 20);
+            this.txtBoxDiffMM.TabIndex = 16;
+            // 
+            // txtBoxMaxX
+            // 
+            this.txtBoxMaxX.Location = new System.Drawing.Point(88, 193);
+            this.txtBoxMaxX.Name = "txtBoxMaxX";
+            this.txtBoxMaxX.ReadOnly = true;
+            this.txtBoxMaxX.Size = new System.Drawing.Size(103, 20);
+            this.txtBoxMaxX.TabIndex = 15;
+            // 
+            // txtBoxMinX
+            // 
+            this.txtBoxMinX.Location = new System.Drawing.Point(88, 167);
+            this.txtBoxMinX.Name = "txtBoxMinX";
+            this.txtBoxMinX.ReadOnly = true;
+            this.txtBoxMinX.Size = new System.Drawing.Size(103, 20);
+            this.txtBoxMinX.TabIndex = 14;
+            // 
+            // txtBoxMeanFDX
+            // 
+            this.txtBoxMeanFDX.Location = new System.Drawing.Point(88, 141);
+            this.txtBoxMeanFDX.Name = "txtBoxMeanFDX";
+            this.txtBoxMeanFDX.ReadOnly = true;
+            this.txtBoxMeanFDX.Size = new System.Drawing.Size(103, 20);
+            this.txtBoxMeanFDX.TabIndex = 13;
+            // 
+            // txtBoxStdX
+            // 
+            this.txtBoxStdX.Location = new System.Drawing.Point(88, 115);
+            this.txtBoxStdX.Name = "txtBoxStdX";
+            this.txtBoxStdX.ReadOnly = true;
+            this.txtBoxStdX.Size = new System.Drawing.Size(103, 20);
+            this.txtBoxStdX.TabIndex = 12;
+            // 
+            // txtBoxMeanX
+            // 
+            this.txtBoxMeanX.Location = new System.Drawing.Point(88, 89);
+            this.txtBoxMeanX.Name = "txtBoxMeanX";
+            this.txtBoxMeanX.ReadOnly = true;
+            this.txtBoxMeanX.Size = new System.Drawing.Size(103, 20);
+            this.txtBoxMeanX.TabIndex = 1;
+            // 
+            // lblMeanAbsFD2
+            // 
+            this.lblMeanAbsFD2.AutoSize = true;
+            this.lblMeanAbsFD2.Location = new System.Drawing.Point(7, 274);
+            this.lblMeanAbsFD2.Name = "lblMeanAbsFD2";
+            this.lblMeanAbsFD2.Size = new System.Drawing.Size(75, 13);
+            this.lblMeanAbsFD2.TabIndex = 11;
+            this.lblMeanAbsFD2.Text = "MeanAbsFD2:";
+            // 
+            // lblMeanAbsFD
+            // 
+            this.lblMeanAbsFD.AutoSize = true;
+            this.lblMeanAbsFD.Location = new System.Drawing.Point(13, 248);
+            this.lblMeanAbsFD.Name = "lblMeanAbsFD";
+            this.lblMeanAbsFD.Size = new System.Drawing.Size(69, 13);
+            this.lblMeanAbsFD.TabIndex = 10;
+            this.lblMeanAbsFD.Text = "MeanAbsFD:";
+            // 
+            // lblDifMM
+            // 
+            this.lblDifMM.AutoSize = true;
+            this.lblDifMM.Location = new System.Drawing.Point(38, 222);
+            this.lblDifMM.Name = "lblDifMM";
+            this.lblDifMM.Size = new System.Drawing.Size(44, 13);
+            this.lblDifMM.TabIndex = 9;
+            this.lblDifMM.Text = "DiffMM:";
+            // 
+            // lblMaxX
+            // 
+            this.lblMaxX.AutoSize = true;
+            this.lblMaxX.Location = new System.Drawing.Point(45, 196);
+            this.lblMaxX.Name = "lblMaxX";
+            this.lblMaxX.Size = new System.Drawing.Size(37, 13);
+            this.lblMaxX.TabIndex = 8;
+            this.lblMaxX.Text = "MaxX:";
+            // 
+            // lblMINX
+            // 
+            this.lblMINX.AutoSize = true;
+            this.lblMINX.Location = new System.Drawing.Point(48, 170);
+            this.lblMINX.Name = "lblMINX";
+            this.lblMINX.Size = new System.Drawing.Size(34, 13);
+            this.lblMINX.TabIndex = 7;
+            this.lblMINX.Text = "MinX:";
+            // 
+            // lblMeanFDX
+            // 
+            this.lblMeanFDX.AutoSize = true;
+            this.lblMeanFDX.Location = new System.Drawing.Point(24, 144);
+            this.lblMeanFDX.Name = "lblMeanFDX";
+            this.lblMeanFDX.Size = new System.Drawing.Size(58, 13);
+            this.lblMeanFDX.TabIndex = 6;
+            this.lblMeanFDX.Text = "MeanFDX:";
+            // 
+            // lblStdX
+            // 
+            this.lblStdX.AutoSize = true;
+            this.lblStdX.Location = new System.Drawing.Point(49, 118);
+            this.lblStdX.Name = "lblStdX";
+            this.lblStdX.Size = new System.Drawing.Size(33, 13);
+            this.lblStdX.TabIndex = 5;
+            this.lblStdX.Text = "StdX:";
+            // 
+            // lblMeanX
+            // 
+            this.lblMeanX.AutoSize = true;
+            this.lblMeanX.Location = new System.Drawing.Point(38, 92);
+            this.lblMeanX.Name = "lblMeanX";
+            this.lblMeanX.Size = new System.Drawing.Size(44, 13);
+            this.lblMeanX.TabIndex = 4;
+            this.lblMeanX.Text = "MeanX:";
+            // 
+            // cBoxSegments
+            // 
+            this.cBoxSegments.FormattingEnabled = true;
+            this.cBoxSegments.Location = new System.Drawing.Point(88, 49);
+            this.cBoxSegments.Name = "cBoxSegments";
+            this.cBoxSegments.Size = new System.Drawing.Size(156, 21);
+            this.cBoxSegments.TabIndex = 1;
+            this.cBoxSegments.SelectedIndexChanged += new System.EventHandler(this.cBoxSegments_SelectedIndexChanged);
+            // 
+            // lblSegments
+            // 
+            this.lblSegments.AutoSize = true;
+            this.lblSegments.Location = new System.Drawing.Point(25, 52);
+            this.lblSegments.Name = "lblSegments";
+            this.lblSegments.Size = new System.Drawing.Size(57, 13);
+            this.lblSegments.TabIndex = 1;
+            this.lblSegments.Text = "Segments:";
             // 
             // chkBoxFollowIncomingData
             // 
@@ -205,7 +404,8 @@ namespace Herz.GUI
             // 
             // btnStop
             // 
-            this.btnStop.Location = new System.Drawing.Point(176, 408);
+            this.btnStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnStop.Location = new System.Drawing.Point(160, 408);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(75, 23);
             this.btnStop.TabIndex = 3;
@@ -215,12 +415,14 @@ namespace Herz.GUI
             // 
             // btnStart
             // 
-            this.btnStart.Location = new System.Drawing.Point(95, 408);
+            this.btnStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnStart.Location = new System.Drawing.Point(79, 408);
             this.btnStart.Name = "btnStart";
             this.btnStart.Size = new System.Drawing.Size(75, 23);
             this.btnStart.TabIndex = 2;
             this.btnStart.Text = "Start";
             this.btnStart.UseVisualStyleBackColor = true;
+            this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
             // 
             // statusStrip1
             // 
@@ -260,6 +462,10 @@ namespace Herz.GUI
             this.toolStripLblY.Size = new System.Drawing.Size(43, 17);
             this.toolStripLblY.Text = "YValue";
             // 
+            // openFileDialog
+            // 
+            this.openFileDialog.FileName = "openFileDialog";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -291,10 +497,6 @@ namespace Herz.GUI
         #endregion
 
         private System.Windows.Forms.MenuStrip menuStrip;
-        private System.Windows.Forms.ToolStripMenuItem startToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem choseDataSourceToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem otherToolStripMenuItem;
         private System.Windows.Forms.GroupBox grBoxRawData;
         private System.Windows.Forms.GroupBox grBoxHRSignal;
         private System.Windows.Forms.DataVisualization.Charting.Chart hrSignalGraph;
@@ -308,6 +510,29 @@ namespace Herz.GUI
         private System.Windows.Forms.ToolStripStatusLabel toolStripLblX;
         private System.Windows.Forms.ToolStripStatusLabel labelY;
         private System.Windows.Forms.ToolStripStatusLabel toolStripLblY;
+        private System.Windows.Forms.TextBox txtBoxMeanAbsFD2;
+        private System.Windows.Forms.TextBox txtBoxMeanAbsFD;
+        private System.Windows.Forms.TextBox txtBoxDiffMM;
+        private System.Windows.Forms.TextBox txtBoxMaxX;
+        private System.Windows.Forms.TextBox txtBoxMinX;
+        private System.Windows.Forms.TextBox txtBoxMeanFDX;
+        private System.Windows.Forms.TextBox txtBoxStdX;
+        private System.Windows.Forms.TextBox txtBoxMeanX;
+        private System.Windows.Forms.Label lblMeanAbsFD2;
+        private System.Windows.Forms.Label lblMeanAbsFD;
+        private System.Windows.Forms.Label lblDifMM;
+        private System.Windows.Forms.Label lblMaxX;
+        private System.Windows.Forms.Label lblMINX;
+        private System.Windows.Forms.Label lblMeanFDX;
+        private System.Windows.Forms.Label lblStdX;
+        private System.Windows.Forms.Label lblMeanX;
+        private System.Windows.Forms.ComboBox cBoxSegments;
+        private System.Windows.Forms.Label lblSegments;
+        private System.Windows.Forms.ToolStripMenuItem openFilesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem eCGFileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem segmentStartToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem segmentEndToolStripMenuItem;
+        private System.Windows.Forms.OpenFileDialog openFileDialog;
     }
 }
 

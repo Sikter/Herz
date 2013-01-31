@@ -8,11 +8,11 @@ namespace Herz.Algorithm
 {
     public class MWI : IFilter<ECGSample>
     {
-        List<double> elements = new List<double>(60);
+        List<double> elements = new List<double>(46);
 
         public MWI() 
         {
-            for (int i = 0; i < 60; i++)
+            for (int i = 0; i < 46; i++)
                 elements.Add(0);
         }
 
@@ -33,7 +33,7 @@ namespace Herz.Algorithm
                 elements.RemoveAt(0);
             elements.Add(sample.Value);
 
-            for (int i = 0; i < 60; i++)
+            for (int i = 0; i < 46; i++)
                 result += elements[i];
 
             sample.Value = result;

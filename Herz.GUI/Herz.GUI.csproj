@@ -86,6 +86,10 @@
       <Project>{BD865493-5280-4482-816B-67FC5BFB1F93}</Project>
       <Name>Herz.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Herz.Estimator\Herz.Estimator.csproj">
+      <Project>{81FD0CB5-C1B3-4412-81ED-FAABD9D6DCBD}</Project>
+      <Name>Herz.Estimator</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

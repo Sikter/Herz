@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Herz.Common", "Herz.Common\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Herz.Algorithm", "Herz.Algorithm\Herz.Algorithm.csproj", "{623B2969-8436-42A8-8E36-5D264CEB6D7E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Herz.Estimator", "Herz.Estimator\Herz.Estimator.csproj", "{81FD0CB5-C1B3-4412-81ED-FAABD9D6DCBD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,16 @@ Global
 		{623B2969-8436-42A8-8E36-5D264CEB6D7E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{623B2969-8436-42A8-8E36-5D264CEB6D7E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{623B2969-8436-42A8-8E36-5D264CEB6D7E}.Release|x86.ActiveCfg = Release|Any CPU
+		{81FD0CB5-C1B3-4412-81ED-FAABD9D6DCBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81FD0CB5-C1B3-4412-81ED-FAABD9D6DCBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81FD0CB5-C1B3-4412-81ED-FAABD9D6DCBD}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{81FD0CB5-C1B3-4412-81ED-FAABD9D6DCBD}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{81FD0CB5-C1B3-4412-81ED-FAABD9D6DCBD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{81FD0CB5-C1B3-4412-81ED-FAABD9D6DCBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81FD0CB5-C1B3-4412-81ED-FAABD9D6DCBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81FD0CB5-C1B3-4412-81ED-FAABD9D6DCBD}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{81FD0CB5-C1B3-4412-81ED-FAABD9D6DCBD}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{81FD0CB5-C1B3-4412-81ED-FAABD9D6DCBD}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

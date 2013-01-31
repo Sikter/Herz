@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Herz.Algorithm;
+using Herz.Estimator;
 using System.Windows.Forms.DataVisualization.Charting;
 using Herz.Common;
 using System.Threading.Tasks;
@@ -21,15 +22,23 @@ namespace Herz.GUI
         BlockingCollection<ECGSample> rawQueue = new BlockingCollection<ECGSample>();
         BlockingCollection<ECGSample> filteredQueue = new BlockingCollection<ECGSample>();
         BlockingCollection<ECGSample> detectedQRSQueue = new BlockingCollection<ECGSample>();
-        
+
+        string ecgFile;
+        string segmentStartFile;
+        string segmentStopFile;
+
         CSVReader reader;
+        int bufferSize = 250;
+        int samplingFrequency = 1250;
         int plotFrequency;
         LowPassFilter lp = new LowPassFilter();
         DerivativeFilter derivative = new DerivativeFilter();
         SquareFilter square = new SquareFilter();
         MWI integrator = new MWI();
-        Detector detector;
         Pipeline<ECGSample> PanTompkins;
+        Detector detector;
+        Estimator.Estimator estimator;
+
         bool stop;
 
 
@@ -40,28 +49,10 @@ namespace Herz.GUI
             InitializeComponent();
             InitializeGraphs(rawDataGraph, SeriesChartType.FastLine, -0.5, 0.8);
             InitializeGraphs(hrSignalGraph,SeriesChartType.FastLine, -0.03, 0.1);
-
-            reader = new CSVReader("D:\\Fax\\Diplomski\\3.Semestar\\ISS\\ecg.csv", 250, 1250);
-            reader.DataReady += new EventHandler<Herz.Common.DataReadyEventArgs>(reader_DataReady);
-
-            PanTompkins = new Pipeline<ECGSample>(reader.Frequency);
-            PanTompkins.Register(lp);
-            PanTompkins.Register(derivative);
-            PanTompkins.Register(square);
-            PanTompkins.Register(integrator);
-            PanTompkins.Register(new Delay(PanTompkins.FilterDelay));
-            detector = new Detector(PanTompkins.samplingFrequency);
             
-
-            // Plot data with 50 samples per second.
-            plotFrequency = reader.Frequency / 50;
-
-            TaskScheduler uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-            Task.Factory.StartNew(() => reader.Read());
-            Task.Factory.StartNew(() => PlotRaw(uiScheduler));
-            Task.Factory.StartNew(() => PlotProcessed(uiScheduler));
-            Task.Factory.StartNew(() => PlotDetectedQRS(uiScheduler));
         }
+
+        
 
         private void PlotRaw(TaskScheduler uiScheduler)
         {
@@ -105,7 +96,8 @@ namespace Herz.GUI
                 ECGSample qrs = new ECGSample(value.Index, value.Value);
                 Task.Factory.StartNew(() =>
                 {
-                    hrSignalGraph.Series[1].Points.AddXY(qrs.Index, 1 / qrs.Value);
+                    //hrSignalGraph.Series[1].Points.AddXY(qrs.Index, 1 / qrs.Value);
+                    rawDataGraph.Series[1].Points.AddXY(qrs.Index, 1 / qrs.Value);
                 }, CancellationToken.None, TaskCreationOptions.None, uiScheduler);
             }
         }
@@ -130,10 +122,13 @@ namespace Herz.GUI
                 foreach (ECGSample s in detector.Execute(filteredChunk))
                 {
                     if (!detectedQRSQueue.IsAddingCompleted)
+                    {
                         detectedQRSQueue.Add(new ECGSample(s.Index, s.Value));
-                }
+                        estimator.RRPeaks.Add(new ECGSample(s.Index, s.Value));
+                        RecalculateFeatures();
+                    }
+                }  
             }
-
         }
 
         private void btnStop_Click(object sender, EventArgs e)
@@ -170,8 +165,8 @@ namespace Herz.GUI
 
             chartArea.AxisX.Minimum = 0;
 
-            chartArea.AxisY.Minimum = yMin;
-            chartArea.AxisY.Maximum = yMax;
+            //chartArea.AxisY.Minimum = yMin;
+            //chartArea.AxisY.Maximum = yMax;
         }
 
         private void chkBoxFollowIncomingData_CheckedChanged(object sender, EventArgs e)
@@ -199,6 +194,101 @@ namespace Herz.GUI
 
             toolStripLblX.Text = ((int)pointXPixel).ToString();
             toolStripLblY.Text = (Math.Floor((pointYPixel * 100000) + 0.5) / 100000).ToString();
+        }
+
+        private void btnStart_Click(object sender, EventArgs e)
+        {
+            if (String.IsNullOrEmpty(ecgFile) || String.IsNullOrEmpty(segmentStartFile) || String.IsNullOrEmpty(segmentStopFile)) 
+            {
+                MessageBox.Show("Load all neccesary files", "Missing files", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                //"D:\\Fax\\Diplomski\\3.Semestar\\ISS\\data\\S_04_ecg.csv"
+                reader = new CSVReader(ecgFile, bufferSize, samplingFrequency);
+                reader.DataReady += new EventHandler<Herz.Common.DataReadyEventArgs>(reader_DataReady);
+
+                PanTompkins = new Pipeline<ECGSample>(reader.Frequency);
+                PanTompkins.Register(lp);
+                PanTompkins.Register(derivative);
+                PanTompkins.Register(square);
+                PanTompkins.Register(integrator);
+                PanTompkins.Register(new Delay(PanTompkins.FilterDelay));
+
+                detector = new Detector(samplingFrequency, bufferSize);
+                estimator = EstimatorFactory.CreateEstimatorFromFile(segmentStartFile, segmentStopFile, samplingFrequency);
+
+                cBoxSegments.DataSource = estimator.Segments;
+                cBoxSegments.DisplayMember = "Index";
+                cBoxSegments.ValueMember = "Index";
+
+                
+
+                // Plot data with 50 samples per second.
+                plotFrequency = reader.Frequency / 50;
+
+                TaskScheduler uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+                Task.Factory.StartNew(() => reader.Read());
+                Task.Factory.StartNew(() => PlotRaw(uiScheduler));
+                //Task.Factory.StartNew(() => PlotProcessed(uiScheduler));
+                Task.Factory.StartNew(() => PlotDetectedQRS(uiScheduler));
+            }
+        }
+
+        private void eCGFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Show the dialog and get result.
+            DialogResult result = openFileDialog.ShowDialog();
+            if (result == DialogResult.OK) 
+            {
+                ecgFile = openFileDialog.FileName;
+                eCGFileToolStripMenuItem.DropDownItems.Clear();
+                eCGFileToolStripMenuItem.DropDownItems.Add(ecgFile);
+            }
+        }
+
+        private void segmentStartToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Show the dialog and get result.
+            DialogResult result = openFileDialog.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                segmentStartFile = openFileDialog.FileName;
+                segmentStartToolStripMenuItem.DropDownItems.Clear();
+                segmentStartToolStripMenuItem.DropDownItems.Add(segmentStartFile);
+            }
+        }
+
+        private void segmentEndToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Show the dialog and get result.
+            DialogResult result = openFileDialog.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                segmentStopFile = openFileDialog.FileName;
+                segmentEndToolStripMenuItem.DropDownItems.Clear();
+                segmentEndToolStripMenuItem.DropDownItems.Add(segmentStopFile);
+            }
+        }
+
+        private void cBoxSegments_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            RecalculateFeatures();
+        }
+
+        private void RecalculateFeatures()
+        {
+            this.Invoke((MethodInvoker)delegate()
+            {
+                txtBoxMeanX.Text = estimator.CalcMeanX((cBoxSegments.SelectedItem as Segment).Index).ToString();
+                txtBoxStdX.Text = estimator.CalcStdX((cBoxSegments.SelectedItem as Segment).Index).ToString();
+                txtBoxMinX.Text = estimator.CalcMinX((cBoxSegments.SelectedItem as Segment).Index).ToString();
+                txtBoxMaxX.Text = estimator.CalcMaxX((cBoxSegments.SelectedItem as Segment).Index).ToString();
+                txtBoxDiffMM.Text = estimator.CalcDiffMMX((cBoxSegments.SelectedItem as Segment).Index).ToString();
+                txtBoxMeanAbsFD.Text = estimator.CalcMeanAbsFD((cBoxSegments.SelectedItem as Segment).Index).ToString();
+                txtBoxMeanAbsFD2.Text = estimator.CalcMeanAbsFD2((cBoxSegments.SelectedItem as Segment).Index).ToString();
+            });
+            
         }
     }
 }
